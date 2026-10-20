@@ -1,0 +1,35 @@
+# ============================================================
+# Render.com Blueprint for BAFS Backend (Free Tier)
+# ============================================================
+services:
+  - type: web
+    name: bafs-backend-api
+    runtime: python
+    region: singapore # Choose singapore, oregon, or frankfurt
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: APP_NAME
+        value: "Birdawade Associates & Financial Services"
+      - key: APP_SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: "https://*.vercel.app,http://localhost:3000"
+      - key: DATABASE_URL
+        sync: false # Set to your Neon PostgreSQL connection string
+      - key: REDIS_URL
+        sync: false # Set to your Upstash Redis connection string (optional)
+      - key: STORAGE_BACKEND
+        value: "minio" # Or 's3' if using Cloudflare R2
+      - key: MINIO_ENDPOINT
+        value: "localhost:9000"
+      - key: SMS_PROVIDER
+        value: "mock" # Or 'msg91' for production SMS
