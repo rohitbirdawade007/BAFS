@@ -30,8 +30,7 @@ redis[hiredis]==5.2.0
 arq==0.26.1
 
 # S3-compatible Storage (MinIO / AWS S3)
-boto3==1.35.69
-aiobotocore==2.15.2
+boto3>=1.35.0
 
 # Utilities
 python-dotenv==1.0.1
