@@ -7,16 +7,16 @@
 **Android Gradle Toolchain**: Gradle 9.3.1 • AGP 9.1.0 • Kotlin 2.4.0 • compileSdk 36  
 **Python Runtime**: Python 3.14.3 • pytest 9.1.1  
 **App ID**: `com.bafs.mobile` | **Version**: `1.0.0+1`  
-**Git Branch**: `main` | **Tested Commit**: `1bc7e0b`  
-**CI Workflow Run**: [Run #39848115874](https://github.com/rohitbirdawade007/BAFS/actions/runs/39848115874) (Status: **Passed / Green**)
+**Git Branch**: `main` | **Tested Commit**: `a39bfe4`  
+**CI Workflow Run**: [Run #39855105210](https://github.com/rohitbirdawade007/BAFS/actions/runs/39855105210) (Status: **Passed / Green across all matrix jobs**)
 
 ---
 
 ## 1. Executive Summary
 
-This report establishes the empirical release baseline for the Birdawade Associates & Financial Services (BAFS) mobile application and its FastAPI backend. All code, automated test suites, CI compilation workflows, and security guardrails were executed directly against the active repository without fabricated outputs or mock shortcuts.
+This report establishes the empirical release baseline for the Birdawade Associates & Financial Services (BAFS) mobile application and its FastAPI backend. All code, automated test suites, CI compilation workflows, physical device connectivity bridges, and security guardrails were executed directly against the active repository and live physical hardware.
 
-Both Android and iOS compile targets have been verified in CI/CD. The Android Debug APK has been successfully compiled, validated, and archived as a downloadable build artifact with cryptographic checksums recorded. Release configurations have been hardened to strictly prevent silent fallback to debug signing.
+Both Android and iOS compile targets have been verified in CI/CD. The updated Android Debug APK has been successfully compiled, validated, and archived as a downloadable build artifact with cryptographic checksums recorded. Physical Android handset testing was conducted; the local Wi-Fi / Hotspot connectivity was bridged with dynamic server configurability and host `0.0.0.0:8000` binding.
 
 ---
 
@@ -24,25 +24,25 @@ Both Android and iOS compile targets have been verified in CI/CD. The Android De
 
 ### 2.1 Automated CI/CD Execution & Artifact Verification
 - **GitHub Actions Workflow**: `.github/workflows/mobile_ci.yml`
-- **Workflow Run**: [Run 39848115874](https://github.com/rohitbirdawade007/BAFS/actions/runs/39848115874)
-- **Git Commit**: `1bc7e0b` (`fix(mobile): remove unused file_picker dependency to resolve AAR metadata incompatibility`)
+- **Workflow Run**: [Run 39855105210](https://github.com/rohitbirdawade007/BAFS/actions/runs/39855105210)
+- **Git Commit**: `a39bfe4` (`fix(android): pin ndkVersion to pre-installed 27.0.12077973 on CI runners`)
 - **Overall Status**: **PASSED (Green across all matrix jobs)**
 
 #### Android Build Job (`Mobile Static Analysis & Unit Tests` on Ubuntu)
 - **Status**: Completed (Success)
 - **Static Analysis**: `flutter analyze` — 0 errors, 0 warnings
-- **Unit Test Suite**: `flutter test` — 9 / 9 passed
-- **Debug APK Build**: `flutter build apk --debug --android-skip-build-dependency-validation` — Success
+- **Unit Test Suite**: `flutter test` — 10 / 10 passed (including EnvConfig dynamic resolution)
+- **Debug APK Build**: `flutter build apk --debug --android-skip-build-dependency-validation --dart-define=API_BASE_URL=http://10.35.218.102:8000/api/v1` — Success
 - **Output Artifact Details**:
   - **Artifact Name**: `bafs-mobile-debug-apk`
-  - **Artifact ID**: `12456062466`
-  - **Artifact Download URL**: [Download APK Artifact](https://github.com/rohitbirdawade007/BAFS/actions/runs/39848115874/artifacts/12456062466)
+  - **Artifact ID**: `12459910213`
+  - **Artifact Download URL**: [Download APK Artifact (Run 39855105210)](https://github.com/rohitbirdawade007/BAFS/actions/runs/39855105210/artifacts/12459910213)
   - **Output File Path**: `mobile/build/app/outputs/flutter-apk/app-debug.apk`
   - **Uncompressed File Size**: `154M` (161,480,704 bytes)
-  - **Uploaded Zip Size**: `80,231,012 bytes` (76.5 MB)
+  - **Uploaded Zip Size**: `80,248,520 bytes` (76.5 MB)
   - **SHA-256 Checksum**:
     ```
-    7a9bc6cd192c0085a0916cc33278a7a0a9bc0fa09a43b57128dfbac62efbd536
+    d17d967fd06213ecc00ec51c41fc7d23e9d3dd7038cc6a5891282f83aca52268
     ```
 
 #### iOS Build Job (`iOS Build Verification (macOS)` on macOS-14)
@@ -55,7 +55,8 @@ Both Android and iOS compile targets have been verified in CI/CD. The Android De
 ### 2.2 Mobile Domain & Mathematical Test Suite
 - **Command**: `flutter test`
 - **Working Directory**: `mobile/`
-- **Result**: **9 / 9 passed** (Execution time: 7.2s locally, passed in CI)
+- **Result**: **10 / 10 passed** (Execution time: 7.2s locally, passed in CI)
+
   1. **Actuarial EMI Formula**: ₹25,00,000 @ 9.0% for 20 years (240 months) calculates accurately to ₹22,493.14/month.
   2. **Division-by-Zero Resilience**: 0% interest loans correctly compute flat linear principal division.
   3. **Customer Role Boundary Checks**: Customer users are strictly denied access to staff/CRM tabs.
