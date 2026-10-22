@@ -29,9 +29,6 @@ dependencies:
   # Formatting & Date manipulation
   intl: ^0.19.0
 
-  # File Selection (for document uploads)
-  file_picker: ^8.0.3
-
   # Icons & Graphics
   flutter_svg: ^2.0.10+1
 
