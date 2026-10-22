@@ -55,7 +55,7 @@ async def seed():
 
         # ── 2. Staff Users ────────────────────────────────────────────────────
         staff_defs = [
-            ("9822100000", UserRole.OPERATIONS_ADMIN, "Rohit Birdawade", "Operations Head"),
+            ("7038119511", UserRole.OPERATIONS_ADMIN, "Rohit Birdawade", "Operations Head"),
             ("9822100001", UserRole.LOAN_CONSULTANT, "Rajesh Shinde", "Senior Loan Consultant"),
             ("9822100002", UserRole.DOCUMENT_VERIFIER, "Pooja Kadam", "Document Verification Specialist"),
             ("9822100003", UserRole.FINANCE_OFFICER, "Sunil More", "Finance & Payouts Officer"),
