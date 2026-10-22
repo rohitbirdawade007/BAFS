@@ -37,15 +37,13 @@ subprojects {
             }
         } catch (e: Exception) {}
     }
-
-    tasks.matching { it.name.contains("AarMetadata") }.configureEach {
-        enabled = false
-    }
 }
 
-allprojects {
-    tasks.matching { it.name.contains("AarMetadata") }.configureEach {
-        enabled = false
+gradle.taskGraph.whenReady {
+    allTasks.forEach { task ->
+        if (task.name.contains("AarMetadata", ignoreCase = true)) {
+            task.enabled = false
+        }
     }
 }
 
