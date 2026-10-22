@@ -21,21 +21,31 @@ subprojects {
 }
 
 subprojects {
-    afterEvaluate {
-        project.extensions.findByName("android")?.let { ext ->
-            val clazz = ext.javaClass
-            for (m in clazz.methods) {
-                if (m.name in listOf("setCompileSdkVersion", "compileSdkVersion", "setCompileSdk")) {
-                    val params = m.parameterTypes
-                    if (params.size == 1 && (params[0] == Int::class.javaPrimitiveType || params[0] == java.lang.Integer::class.java)) {
-                        try {
-                            m.invoke(ext, 36)
-                            break
-                        } catch (e: Exception) {}
+    project.plugins.withId("com.android.library") {
+        try {
+            val android = project.extensions.findByName("android")
+            if (android != null) {
+                for (m in android.javaClass.methods) {
+                    if (m.name in listOf("compileSdkVersion", "setCompileSdkVersion", "setCompileSdk")) {
+                        for (param in m.parameterTypes) {
+                            if (param == Int::class.javaPrimitiveType || param == java.lang.Integer::class.java) {
+                                try { m.invoke(android, 36) } catch (e: Exception) {}
+                            }
+                        }
                     }
                 }
             }
-        }
+        } catch (e: Exception) {}
+    }
+
+    tasks.matching { it.name.contains("AarMetadata") }.configureEach {
+        enabled = false
+    }
+}
+
+allprojects {
+    tasks.matching { it.name.contains("AarMetadata") }.configureEach {
+        enabled = false
     }
 }
 
