@@ -47,7 +47,7 @@ jobs:
         run: flutter test
 
       - name: Build Android Debug APK
-        run: flutter build apk --debug
+        run: flutter build apk --debug --android-skip-build-dependency-validation
 
       - name: Record APK Size and SHA-256
         run: |
