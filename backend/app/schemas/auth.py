@@ -72,3 +72,16 @@ class OTPRequestResponseSchema(BaseModel):
 
 class LogoutSchema(BaseModel):
     refresh_token: Optional[str] = None
+
+
+class UserMeResponseSchema(BaseModel):
+    user_id: uuid.UUID
+    mobile_number: str
+    primary_role: str
+    is_active: bool
+    is_verified: bool
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    branch_name: Optional[str] = None
+    designation: Optional[str] = None
+

@@ -32,8 +32,10 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
+!mobile/lib/
+!mobile/lib/**
 parts/
 sdist/
 var/
@@ -79,8 +81,22 @@ yarn-error.log*
 Thumbs.db
 Desktop.ini
 
-# ── IDEs ──────────────────────────────────────────────────────
-.vscode/
-.idea/
-*.swp
-*.swo
+# ── Mobile & Flutter ──────────────────────────────────────────
+**/android/key.properties
+**/android/*.jks
+**/android/*.keystore
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/build/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+mobile/ios/.symlinks/
+mobile/ios/Pods/
+mobile/ios/Podfile.lock
+mobile/ios/Flutter/ephemeral/
+mobile/ios/Flutter/Generated.xcconfig
+mobile/ios/Flutter/flutter_export_environment.sh
+mobile/ios/Runner/GeneratedPluginRegistrant.h
+mobile/ios/Runner/GeneratedPluginRegistrant.m

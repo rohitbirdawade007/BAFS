@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
-from app.api.v1.endpoints import auth, leads
+from app.api.v1.endpoints import applications, auth, leads
 
 settings = get_settings()
 
@@ -128,3 +128,4 @@ PREFIX = settings.api_v1_prefix
 
 app.include_router(auth.router, prefix=PREFIX)
 app.include_router(leads.router, prefix=PREFIX)
+app.include_router(applications.router, prefix=PREFIX)

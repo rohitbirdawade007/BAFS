@@ -25,7 +25,9 @@ from app.core.security import (
     hash_refresh_token,
     verify_otp_hash,
 )
-from app.models import Customer, OTPRequest, RefreshToken, User, UserRole
+from sqlalchemy.orm import selectinload
+
+from app.models import Customer, OTPRequest, RefreshToken, StaffProfile, User, UserRole
 from app.schemas.auth import (
     LogoutSchema,
     OTPRequestResponseSchema,
@@ -33,6 +35,7 @@ from app.schemas.auth import (
     OTPVerifySchema,
     RefreshTokenSchema,
     TokenResponseSchema,
+    UserMeResponseSchema,
 )
 from app.services.sms import get_sms_adapter
 
@@ -336,3 +339,53 @@ async def logout(
         if db_token:
             db_token.is_revoked = True
             await db.commit()
+
+
+@router.get(
+    "/me",
+    response_model=UserMeResponseSchema,
+    summary="Get current user profile and role",
+)
+async def get_me(
+    current_user: CurrentUser,
+    db: DbSession,
+) -> UserMeResponseSchema:
+    """Returns profile and role information for the authenticated user."""
+    user_res = await db.execute(
+        select(User)
+        .where(User.id == current_user.user_id)
+        .options(
+            selectinload(User.customer_profile),
+            selectinload(User.staff_profile).selectinload(StaffProfile.branch),
+        )
+    )
+    user = user_res.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    full_name = None
+    email = user.email
+    branch_name = None
+    designation = None
+
+    if user.staff_profile:
+        full_name = user.staff_profile.full_name
+        designation = user.staff_profile.designation
+        if user.staff_profile.branch:
+            branch_name = user.staff_profile.branch.name
+    elif user.customer_profile:
+        full_name = user.customer_profile.full_name
+        email = user.customer_profile.email or user.email
+
+    return UserMeResponseSchema(
+        user_id=user.id,
+        mobile_number=user.mobile_number,
+        primary_role=user.primary_role.value,
+        is_active=user.is_active,
+        is_verified=user.is_verified,
+        full_name=full_name,
+        email=email,
+        branch_name=branch_name,
+        designation=designation,
+    )
+

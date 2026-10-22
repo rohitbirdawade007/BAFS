@@ -183,17 +183,25 @@ async def list_leads(
     """
     query = select(Lead).where(Lead.deleted_at.is_(None))
 
-    # ── Access control: consultants see only their assigned leads ─────────────
+    # ── Access control: consultants see assigned leads + unassigned leads ─────
     if current_user.role == UserRole.LOAN_CONSULTANT:
-        from sqlalchemy import exists
-        assigned_sub = (
+        assigned_to_me = (
             select(LeadAssignment.lead_id)
             .where(
                 LeadAssignment.assigned_to_id == current_user.user_id,
                 LeadAssignment.is_current == True,
             )
         )
-        query = query.where(Lead.id.in_(assigned_sub))
+        any_current_assigned = (
+            select(LeadAssignment.lead_id)
+            .where(LeadAssignment.is_current == True)
+        )
+        query = query.where(
+            or_(
+                Lead.id.in_(assigned_to_me),
+                ~Lead.id.in_(any_current_assigned),
+            )
+        )
     elif current_user.role == UserRole.DSA_AGENT:
         from app.models import DSAAttribution
         attributed_sub = (
@@ -355,9 +363,16 @@ async def assign_lead(
         UserRole.SUPER_ADMIN,
         UserRole.OPERATIONS_ADMIN,
         UserRole.BRANCH_MANAGER,
+        UserRole.LOAN_CONSULTANT,
     ),
 ) -> LeadDetailSchema:
     """Assign a lead to a consultant. Closes previous assignment."""
+    if current_user.role == UserRole.LOAN_CONSULTANT and body.assigned_to_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Consultants may only self-assign unassigned leads",
+        )
+
     result = await db.execute(
         select(Lead).where(Lead.id == lead_id, Lead.deleted_at.is_(None))
     )
@@ -388,6 +403,9 @@ async def assign_lead(
         is_current=True,
         reason=body.reason,
     )
+    if lead.status == LeadStatus.NEW:
+        lead.status = LeadStatus.CONTACTED
+
     db.add(new_assignment)
 
     # Log activity
@@ -402,4 +420,31 @@ async def assign_lead(
     await db.commit()
     await db.refresh(lead)
     return LeadDetailSchema.model_validate(lead)
+
+
+@router.post(
+    "/crm/leads/{lead_id}/assign",
+    response_model=LeadDetailSchema,
+    summary="Self-assign lead to current consultant",
+)
+async def self_assign_lead(
+    lead_id: uuid.UUID,
+    current_user: CurrentUser,
+    db: DbSession,
+    _: AuthenticatedUser = require_roles(
+        UserRole.SUPER_ADMIN,
+        UserRole.OPERATIONS_ADMIN,
+        UserRole.BRANCH_MANAGER,
+        UserRole.LOAN_CONSULTANT,
+    ),
+) -> LeadDetailSchema:
+    """Convenience endpoint allowing consultants to self-assign unassigned leads with a single POST."""
+    return await assign_lead(
+        lead_id=lead_id,
+        body=LeadAssignSchema(assigned_to_id=current_user.user_id, reason="Self-assigned by consultant"),
+        current_user=current_user,
+        db=db,
+        _=_,
+    )
+
 
