@@ -47,7 +47,7 @@ jobs:
         run: flutter test
 
       - name: Build Android Debug APK
-        run: flutter build apk --debug --android-skip-build-dependency-validation
+        run: flutter build apk --debug --android-skip-build-dependency-validation --dart-define=API_BASE_URL=http://10.35.218.102:8000/api/v1
 
       - name: Record APK Size and SHA-256
         run: |

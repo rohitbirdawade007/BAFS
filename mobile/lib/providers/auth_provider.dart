@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../core/config/api_endpoints.dart';
+import '../core/config/env_config.dart';
 import '../core/network/api_client.dart';
 import '../core/network/api_exception.dart';
 import '../core/storage/secure_storage_service.dart';
@@ -19,6 +21,55 @@ final Provider<ApiClient> apiClientProvider = Provider<ApiClient>((ref) {
     },
   );
 });
+
+class ApiBaseUrlNotifier extends StateNotifier<String> {
+  final ApiClient _api;
+
+  ApiBaseUrlNotifier(this._api) : super(EnvConfig.apiBaseUrl) {
+    _loadSavedUrl();
+  }
+
+  Future<void> _loadSavedUrl() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString('custom_api_base_url');
+      if (saved != null && saved.isNotEmpty) {
+        EnvConfig.setRuntimeBaseUrl(saved);
+        final resolved = EnvConfig.apiBaseUrl;
+        _api.updateBaseUrl(resolved);
+        state = resolved;
+      }
+    } catch (_) {}
+  }
+
+  Future<void> setBaseUrl(String newUrl) async {
+    EnvConfig.setRuntimeBaseUrl(newUrl);
+    final resolved = EnvConfig.apiBaseUrl;
+    _api.updateBaseUrl(resolved);
+    state = resolved;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('custom_api_base_url', resolved);
+    } catch (_) {}
+  }
+
+  Future<void> resetToDefault() async {
+    EnvConfig.setRuntimeBaseUrl(null);
+    final resolved = EnvConfig.apiBaseUrl;
+    _api.updateBaseUrl(resolved);
+    state = resolved;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('custom_api_base_url');
+    } catch (_) {}
+  }
+}
+
+final apiBaseUrlProvider = StateNotifierProvider<ApiBaseUrlNotifier, String>((ref) {
+  final api = ref.watch(apiClientProvider);
+  return ApiBaseUrlNotifier(api);
+});
+
 
 // Auth State
 class AuthState {

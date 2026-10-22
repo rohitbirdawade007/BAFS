@@ -33,6 +33,11 @@ class ApiClient {
     );
   }
 
+  void updateBaseUrl(String newBaseUrl) {
+    dio.options.baseUrl = newBaseUrl;
+  }
+
+
   ApiException _handleDioError(DioException error) {
     if (error.type == DioExceptionType.connectionTimeout ||
         error.type == DioExceptionType.receiveTimeout ||

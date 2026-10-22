@@ -1,6 +1,6 @@
 import 'dart:math';
-
 import 'package:flutter_test/flutter_test.dart';
+import 'package:bafs_mobile/core/config/env_config.dart';
 import 'package:bafs_mobile/models/auth_user.dart';
 import 'package:bafs_mobile/models/loan_product.dart';
 import 'package:bafs_mobile/models/lead.dart';
@@ -198,4 +198,18 @@ void main() {
       expect(app.lenderSubmissions[0].externalReference, 'HDFC-88229');
     });
   });
+
+  group('Group 6: EnvConfig Dynamic Base URL Resolution & Normalization', () {
+    test('Normalizes custom URL without /api/v1 prefix and strips trailing slashes', () {
+      EnvConfig.setRuntimeBaseUrl('http://192.168.1.50:8000/');
+      expect(EnvConfig.apiBaseUrl, 'http://192.168.1.50:8000/api/v1');
+
+      EnvConfig.setRuntimeBaseUrl('https://api.mycustomdomain.com/api/v1///');
+      expect(EnvConfig.apiBaseUrl, 'https://api.mycustomdomain.com/api/v1');
+
+      EnvConfig.setRuntimeBaseUrl(null);
+      expect(EnvConfig.runtimeBaseUrl, isNull);
+    });
+  });
 }
+
