@@ -1,12 +1,16 @@
+import java.io.File
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-val keystoreProperties = java.util.Properties()
+val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
-    keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
+    FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
 }
 
 android {
@@ -33,7 +37,10 @@ android {
             if (keystorePropertiesFile.exists()) {
                 keyAlias = keystoreProperties.getProperty("keyAlias")
                 keyPassword = keystoreProperties.getProperty("keyPassword")
-                storeFile = keystoreProperties.getProperty("storeFile")?.let { rootProject.file(it) }
+                val storeFilePath = keystoreProperties.getProperty("storeFile")
+                if (storeFilePath != null) {
+                    storeFile = file(storeFilePath)
+                }
                 storePassword = keystoreProperties.getProperty("storePassword")
             }
         }
@@ -68,7 +75,7 @@ gradle.taskGraph.whenReady {
             }
         }
         val storeFilePath = keystoreProperties.getProperty("storeFile")
-        if (!rootProject.file(storeFilePath).exists()) {
+        if (!file(storeFilePath).exists()) {
             throw GradleException("Release build rejected: Keystore file '$storeFilePath' specified in key.properties was not found.")
         }
     }
